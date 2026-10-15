@@ -462,11 +462,65 @@ function teraPicks(p) {
 const REGION_TO_GEN = { Kanto: 1, Johto: 2, Hoenn: 3, Sinnoh: 4, Hisui: 4, Unova: 5, Kalos: 6, Alola: 7, Galar: 8, Paldea: 9 };
 let FILL_POOL = null;
 function seeded(str) { let h = 2166136261; for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0) / 4294967296); }
+// League-wide assignments, worked out once:
+// 1. Every starter (plus the Hisuian forms) goes to a different player, in its Mega,
+//    Gigantamax or Tera form. Players already using that starter get it first.
+// 2. Every mythical, Ultra Beast, Paradox and non-box legendary joins at least one team,
+//    matched to a trainer of its type and era where possible. One special per team.
+const STARTER_IDS = [6, 3, 9, 154, 157, 160, 254, 257, 260, 389, 392, 395, 497, 500, 503, 652, 655, 658, 724, 727, 730, 812, 815, 818, 908, 911, 914];
+let ASSIGN = null;
+function assignments() {
+  if (ASSIGN) return ASSIGN;
+  finals(1);
+  ASSIGN = { starter: new Map(), special: new Map() };
+  const players = trainers.filter(t => t.role === "Protagonist" || t.role === "Rival" || t.n === "Blue" || t.n === "Nemona");
+  const starters = [...STARTER_IDS.map(id => BY_ID.get(id)), ...["Hisuian Typhlosion", "Hisuian Samurott", "Hisuian Decidueye"].map(findByName)].filter(Boolean);
+  const taken = new Set(), later = [];
+  for (const p of starters) {
+    const pl = players.find(t => !taken.has(t) && finalTeam(t).some(m => m.id === p.id));
+    if (pl) { taken.add(pl); ASSIGN.starter.set(pl, p); } else later.push(p);
+  }
+  for (const p of later) {
+    const pl = players.find(t => !taken.has(t) && REGION_TO_GEN[t.r] === sp(p).gen) || players.find(t => !taken.has(t));
+    if (pl) { taken.add(pl); ASSIGN.starter.set(pl, p); }
+  }
+  const covered = new Set();
+  const free = trainers.filter(t => {
+    if (taken.has(t)) return false;
+    const specials = finalTeam(t).filter(p => !SUPER.has(p.s) && isSpecial(p));
+    specials.forEach(p => covered.add(p.s));
+    return !specials.length;
+  });
+  const typesOf = t => t.ty ? [t.ty] : [...new Set(finalTeam(t).flatMap(p => p.t))];
+  const pool = DEFAULTS.filter(p => specialLabel(p) && !SUPER.has(p.s) && !CHILDREN[p.s] && !covered.has(p.s));
+  const typeFit = (t, p) => typesOf(t).some(x => p.t.includes(x));
+  const eraFit = (t, p) => (REGION_TO_GEN[t.r] || 9) >= sp(p).gen;
+  pool.sort((a, b) => free.filter(t => typeFit(t, a)).length - free.filter(t => typeFit(t, b)).length || a.s - b.s);
+  const used = new Set();
+  for (const p of pool) {
+    const t = free.find(t => !used.has(t) && typeFit(t, p) && eraFit(t, p))
+      || free.find(t => !used.has(t) && typeFit(t, p))
+      || free.find(t => !used.has(t) && eraFit(t, p))
+      || free.find(t => !used.has(t));
+    if (t) { used.add(t); ASSIGN.special.set(t, p); }
+  }
+  return ASSIGN;
+}
 function fullTeam(t) {
   if (!FILL_POOL) { finals(1); FILL_POOL = DEFAULTS.filter(p => !CHILDREN[p.s] && !specialLabel(p) && !sp(p).baby).sort((a, b) => bst(b) - bst(a)); }
   const base = finalTeam(t).filter(p => !SUPER.has(p.s));
   const ace = [...base].reverse().find(isSpecial);
-  const out = base.filter(p => !isSpecial(p) || p === ace).map(p => ({ p, filled: false }));
+  let out = base.filter(p => !isSpecial(p) || p === ace).map(p => ({ p, filled: false }));
+  const A = assignments(), starter = A.starter.get(t), recruit = A.special.get(t);
+  if (starter) {
+    const f = formsOf(starter.s);
+    const entry = f.mega.length ? { p: f.mega[0], filled: false, power: "mega" }
+      : f.gmax.length ? { p: f.gmax[0], filled: false, power: "gmax" }
+      : { p: starter, filled: false, power: "tera" };
+    const k = out.findIndex(o => o.p.id === starter.id);
+    if (k >= 0) out[k] = entry; else if (out.length >= 6) out[0] = entry; else out.push(entry);
+    out = out.filter(o => o === entry || !isSpecial(o.p));
+  }
   const have = new Set(out.map(o => o.p.s));
   const push = p => { if (out.length < 6 && !have.has(p.s)) { have.add(p.s); out.push({ p, filled: true }); } };
   const gen = REGION_TO_GEN[t.r] || 9;
@@ -475,12 +529,18 @@ function fullTeam(t) {
   const pick = list => { const top = list.slice(0, 24); while (out.length < 6 && top.length) push(top.splice(Math.floor(rand() * top.length), 1)[0]); };
   pick(FILL_POOL.filter(p => sp(p).gen <= gen && p.t.some(x => types.includes(x))));
   pick(FILL_POOL.filter(p => sp(p).gen <= gen));
+  if (recruit) {
+    const k = out.findIndex(o => o.filled);
+    out[k >= 0 ? k : 0] = { p: recruit, filled: true, power: "recruit" };
+  }
   // Every team carries exactly one power-up. With no special already, the ace (last real
   // member, falling back down the team) powers up: Mega if it can, else Gigantamax, else Tera.
-  if (!out.some(o => isSpecial(o.p))) {
+  if (!starter && !out.some(o => isSpecial(o.p))) {
     const order = [...out.keys()].sort((x, y) => (out[x].filled - out[y].filled) || y - x);
+    const starterSpecies = new Set(STARTER_IDS);
     for (const k of order) {
       const p = out[k].p, f = formsOf(p.s);
+      if (starterSpecies.has(p.s)) continue; // each starter's special form belongs to one player
       if (p.d && f.mega.length) { out[k] = { p: f.mega[0], filled: out[k].filled, power: "mega" }; break; }
       if (p.d && f.gmax.length) { out[k] = { p: f.gmax[0], filled: out[k].filled, power: "gmax" }; break; }
       if (canTera(p)) { out[k].power = "tera"; break; }
@@ -607,6 +667,8 @@ function renderTrainers() {
     const teraAce = (team.find(o => o.power === "tera") || {}).p || null;
     const teraType = teraAce ? (t.tera && canTera(teraAce) ? t.tera : t.ty || teraAce.t[0]) : null;
     const powered = team.find(o => o.power === "mega" || o.power === "gmax");
+    const recruitP = (team.find(o => o.power === "recruit") || {}).p;
+    const ownSpecial = (team.find(o => !o.power && isSpecial(o.p)) || {}).p;
     const bossPower = boss ? boss.st.reduce((a, b, k) => a + statVal(b, k, "lv200"), 0) : 0;
     return `<article class="tcard" style="--tc:${trainerColor(t)}" id="t-${idx}">
       <div class="tcard-top"><div class="mono-av" aria-hidden="true">${initials(t.n)}</div>
@@ -614,6 +676,8 @@ function renderTrainers() {
         <div style="margin-left:auto">${t.ty ? typeBadge(t.ty) : ""}</div></div>
       <div class="team">${team.map(({ p, filled }, k) => `<button type="button" class="${filled ? "filled" : ""}${teraAce && p === teraAce ? " tera-ace" : ""}" data-add="${p.id}" title="${filled ? "Filler pick to complete the six. " : ""}Add ${esc(p.n)} to compare">${pixImg(p)}</button>`).join("")}</div>
       ${powered ? `<p class="tera-line"><span class="pw pw-${powered.power}">${powered.power === "mega" ? "Mega" : "G-Max"}</span> Ace powers up as ${esc(powered.p.n)}</p>` : ""}
+      ${ownSpecial ? `<p class="tera-line"><span class="pw ${isGmax(ownSpecial) ? "pw-gmax" : ownSpecial.mega ? "pw-mega" : "pw-rare"}">${isGmax(ownSpecial) ? "G-Max" : ownSpecial.mega ? "Mega" : specialLabel(ownSpecial)}</span> Signature ace: ${esc(ownSpecial.n)}</p>` : ""}
+      ${recruitP ? `<p class="tera-line"><span class="pw pw-rare">${specialLabel(recruitP)}</span> Special recruit: ${esc(recruitP.n)}</p>` : ""}
       ${teraAce ? `<p class="tera-line"><span class="pw pw-tera">Tera</span> Ace ${esc(teraAce.n)} Terastallizes into ${typeBadge(teraType)}</p>` : ""}
       ${boss ? `<button type="button" class="boss" data-add="${boss.id}" title="Add ${esc(boss.n)} to compare">${pixImg(boss)}<span><span class="boss-k">Pokémon #7 · Secret boss</span><b>${esc(boss.n)}</b><span class="mini">Waits after the final battle · BST ${bst(boss)}</span></span></button>` : ""}
       ${team.some(o => o.filled) ? `<p class="fill-note">Dashed slots are filler picks to complete the six.</p>` : ""}

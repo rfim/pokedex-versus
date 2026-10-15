@@ -261,6 +261,7 @@ h2 { font-size: 1.25rem; font-weight: 700; }
 .pw { display: inline-block; font: 700 0.6rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 6px; border-radius: 999px; color: #fff; vertical-align: 2px; margin-left: 2px; white-space: nowrap; }
 .pw-mega { background: linear-gradient(90deg, #7b2ff7, #f107a3); }
 .pw-gmax { background: linear-gradient(90deg, #d7263d, #ff6b35); }
+.pw-rare { background: linear-gradient(90deg, #8a6d00, #f2c53d); color: #1a1300; }
 .pw-tera { background: linear-gradient(90deg, #00a5d6, #6dd3a0 50%, #e2b714); color: #08202a; }
 .results .pw { font-size: 0.55rem; padding: 1px 5px; }
 .pw-forms { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
