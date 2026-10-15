@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pokédex Versus</title>
+<meta name="description" content="Compare up to four Pokémon side by side: stats, matchups, size, breeding, evolution and fun facts. Plus trainers and Pokémon Masters EX sync pairs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23e3350d' stroke='%23141a26' stroke-width='3'/%3E%3Cpath d='M2 16h28' stroke='%23141a26' stroke-width='3'/%3E%3Cpath d='M2.5 17.5a13.5 13.5 0 0 0 27 0z' fill='%23fff'/%3E%3Ccircle cx='16' cy='16' r='4.5' fill='%23fff' stroke='%23141a26' stroke-width='3'/%3E%3C/svg%3E">
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="#compare" aria-label="Pokédex Versus home">
+      <span class="brand-ball" aria-hidden="true"></span>
+      <span class="brand-word">Pokédex<b>Versus</b></span>
+    </a>
+    <nav class="tabs" role="tablist">
+      <a href="#compare" class="tab" data-view="compare">Compare</a>
+      <a href="#trainers" class="tab" data-view="trainers">Trainers &amp; Masters EX</a>
+    </nav>
+  </div>
+</header>
+
+<main id="view-compare" class="view">
+  <section class="dock" aria-label="Pokémon slots">
+    <div class="dock-head">
+      <div>
+        <h1>Compare up to four Pokémon</h1>
+        <p class="sub">Gen I–IX, all 1,025 species plus Mega, regional and <em>Legends: Z-A</em> forms. Each slot takes its colour from a classic game version.</p>
+      </div>
+      <div class="dock-actions">
+        <button class="btn" id="btn-random" type="button">Random 4</button>
+        <button class="btn" id="btn-share" type="button">Copy link</button>
+        <button class="btn ghost" id="btn-clear" type="button">Clear</button>
+      </div>
+    </div>
+    <div class="slots" id="slots"></div>
+    <div class="presets" id="presets" aria-label="Quick picks"></div>
+  </section>
+  <div id="report" class="report"></div>
+</main>
+
+<main id="view-trainers" class="view" hidden>
+  <section class="tr-hero">
+    <div>
+      <h1>Trainers</h1>
+      <p class="sub">Gym Leaders, Elite Four, Champions, rivals and villains from Kanto to Paldea, with their signature teams. Tap <b>Compare team</b> to send four of their Pokémon to the compare view.</p>
+    </div>
+    <aside class="pmex-card">
+      <h2>Pokémon Masters EX</h2>
+      <p>DeNA's mobile game (launched August 2019, renamed <em>Masters EX</em> for its first anniversary) pairs trainers with one Pokémon as a <b>sync pair</b> on the artificial island of Pasio. Teams of three pairs fight 3-on-3 in real time and unleash <b>sync moves</b>. Sync pairs fill roles: Strike, Tech, Support, and later Sprint and Field. Maxing a pair to 5★ unlocks its <b>EX</b> outfit.</p>
+      <p class="fine">Partners shown are each trainer's signature sync pair. Many trainers have extra variants such as seasonal outfits, Sygna Suits and Neo Champion versions.</p>
+    </aside>
+  </section>
+  <section class="tr-filters">
+    <label class="field"><span>Search</span><input id="tr-q" type="search" placeholder="Name, Pokémon or type" autocomplete="off"></label>
+    <label class="field"><span>Region</span><select id="tr-region"></select></label>
+    <label class="field"><span>Role</span><select id="tr-role"></select></label>
+    <label class="check"><input id="tr-pmex" type="checkbox"> Masters EX sync pairs only</label>
+  </section>
+  <p class="tr-count" id="tr-count"></p>
+  <section class="tr-grid" id="tr-grid"></section>
+</main>
+
+<footer class="foot">
+  <p>Data from <a href="https://pokeapi.co" target="_blank" rel="noopener">PokéAPI</a> (Gen I–IX + Legends: Z-A Megas). Artwork © Nintendo / Creatures / GAME FREAK. Fan project, not affiliated with The Pokémon Company.</p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="data/trainers.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
