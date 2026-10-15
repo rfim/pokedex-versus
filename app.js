@@ -392,18 +392,27 @@ function specialLabel(p) {
 // Team rule: box legendaries never join the six, and a team holds at most one "special":
 // a Mega, Paradox, other legendary or mythical, Ultra Beast, or powered-up form.
 const BOX = new Set([249, 250, 382, 383, 384, 483, 484, 487, 643, 644, 646, 716, 717, 718, 789, 790, 791, 792, 800, 888, 889, 890, 898, 1007, 1008, 1024]);
+// Super legendaries (box legends plus Mewtwo, Arceus and Hoopa) become a seventh "secret boss",
+// like Arceus waiting after the final battle in Legends: Arceus. Each appears in its strongest form.
+const SUPER = new Set([...BOX, 150, 493, 720]);
+const BOSS_FORM = { 150: 10044, 382: 10077, 383: 10078, 384: 10079, 483: 10245, 484: 10246, 487: 10007, 646: 10022, 718: 10120, 720: 10086, 800: 10157, 888: 10188, 889: 10189, 898: 10194, 1024: 10277 };
+function secretBoss(t) {
+  const names = [...t.team, ...(t.leg || []).map(x => x[0]), ...(t.pmex || [])];
+  const p = names.map(findByName).find(p => p && SUPER.has(p.s));
+  return p ? BY_ID.get(BOSS_FORM[p.s]) || p : null;
+}
 const isSpecial = p => !!(p.mega || specialLabel(p) || /primal|crowned|ultra |eternamax|gigantamax|origin/i.test(p.n));
 const REGION_TO_GEN = { Kanto: 1, Johto: 2, Hoenn: 3, Sinnoh: 4, Hisui: 4, Unova: 5, Kalos: 6, Alola: 7, Galar: 8, Paldea: 9, Pasio: 9 };
 let FILL_POOL = null;
 function seeded(str) { let h = 2166136261; for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0) / 4294967296); }
 function fullTeam(t) {
   if (!FILL_POOL) { finals(1); FILL_POOL = DEFAULTS.filter(p => !CHILDREN[p.s] && !specialLabel(p) && !sp(p).baby).sort((a, b) => bst(b) - bst(a)); }
-  const base = finalTeam(t).filter(p => !BOX.has(p.s));
+  const base = finalTeam(t).filter(p => !SUPER.has(p.s));
   const ace = [...base].reverse().find(isSpecial);
   const out = base.filter(p => !isSpecial(p) || p === ace).map(p => ({ p, filled: false }));
   const have = new Set(out.map(o => o.p.s));
   const push = p => { if (out.length < 6 && !have.has(p.s)) { have.add(p.s); out.push({ p, filled: true }); } };
-  (t.pmex || []).map(findByName).filter(Boolean).map(toFinal).forEach(p => !isSpecial(p) && !BOX.has(p.s) && push(p));
+  (t.pmex || []).map(findByName).filter(Boolean).map(toFinal).forEach(p => !isSpecial(p) && !SUPER.has(p.s) && push(p));
   const gen = REGION_TO_GEN[t.r] || 9;
   const types = t.ty ? [t.ty] : [...new Set(out.flatMap(o => o.p.t))];
   const rand = seeded(t.n);
@@ -531,15 +540,18 @@ function renderTrainers() {
     const team = fullTeam(t);
     const power = team.reduce((sum, { p }) => sum + p.st.reduce((a, b, k) => a + statVal(b, k, "lv200"), 0), 0);
     const sync = syncPairs(t);
+    const boss = secretBoss(t);
+    const bossPower = boss ? boss.st.reduce((a, b, k) => a + statVal(b, k, "lv200"), 0) : 0;
     return `<article class="tcard" style="--tc:${trainerColor(t)}" id="t-${idx}">
       <div class="tcard-top"><div class="mono-av" aria-hidden="true">${initials(t.n)}</div>
         <div style="min-width:0"><h3>${esc(t.n)}</h3><div class="role">${esc(t.role)} · ${esc(t.r)}</div></div>
         <div style="margin-left:auto">${t.ty ? typeBadge(t.ty) : ""}</div></div>
       <div class="team">${team.map(({ p, filled }) => `<button type="button" class="${filled ? "filled" : ""}" data-add="${p.id}" title="${filled ? "Filler pick to complete the six. " : ""}Add ${esc(p.n)} to compare">${pixImg(p)}</button>`).join("")}</div>
+      ${boss ? `<button type="button" class="boss" data-add="${boss.id}" title="Add ${esc(boss.n)} to compare">${pixImg(boss)}<span><span class="boss-k">Pokémon #7 · Secret boss</span><b>${esc(boss.n)}</b><span class="mini">Waits after the final battle · BST ${bst(boss)}</span></span></button>` : ""}
       ${team.some(o => o.filled) ? `<p class="fill-note">Dashed slots are filler picks to complete the six.</p>` : ""}
       ${sync.length ? `<div class="sync-list"><span class="ex">MASTERS EX SYNC PAIRS</span>${sync.map(({ p, outfit }) => { const lab = specialLabel(p); return `<button type="button" class="sync${lab ? " legend" : ""}" data-add="${p.id}" title="Add ${esc(p.n)} to compare">${pixImg(p)}<span>${outfit ? `<i>${esc(outfit)}</i> ` : ""}<b>${esc(t.n)} &amp; ${esc(sp(p).n)}</b>${lab ? ` <span class="tag">${lab}</span>` : ""}</span></button>`; }).join("")}</div>` : ""}
       <p class="tfact">${esc(t.fact)}</p>
-      <div class="tcard-foot"><span class="debut">${esc(t.debut)}<br>Lv. 200 maxed team power: <b>${power.toLocaleString("en-GB")}</b></span><button class="btn small" type="button" data-team="${idx}">Compare team</button></div>
+      <div class="tcard-foot"><span class="debut">${esc(t.debut)}<br>Lv. 200 maxed team power: <b>${power.toLocaleString("en-GB")}</b>${boss ? `<br>With secret boss: <b>${(power + bossPower).toLocaleString("en-GB")}</b>` : ""}</span><button class="btn small" type="button" data-team="${idx}">Compare team</button></div>
     </article>`;
   }).join("") || `<p class="mini">No trainers match those filters.</p>`;
 }

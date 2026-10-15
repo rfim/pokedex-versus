@@ -18,7 +18,7 @@ Compare up to four Pokémon side by side, and browse trainers with their Pokémo
   - a six-Pokémon team of fully evolved Pokémon. Pikachu stays as is, and dashed slots are filler picks matching the trainer's speciality and era.
   - their Masters EX sync pairs, including legendary, Ultra Beast and Paradox partners.
   - their team's total stats at Lv. 200 with everything maxed.
-- **Team rule**: at most one Mega, Gigantamax, Paradox, legendary, mythical, Ultra Beast or other powered-up form per team. Box legendaries only appear as sync pairs.
+- **Team rule**: at most one Mega, Gigantamax, Paradox, legendary, mythical, Ultra Beast or other powered-up form per team. Box and super legendaries (Arceus, Mewtwo, Hoopa and the like) join as a seventh "secret boss" in their strongest form (Primal, Origin, Ultra, Unbound, Crowned, Mega).
 - **Lv. 200 max mode**: for fun, every stat at full potential (31 IVs, 252 EVs, boosting nature) at Lv. 200, so you can face your Legends: Z-A rival.
 
 ## Data
