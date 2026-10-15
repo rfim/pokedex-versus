@@ -18,7 +18,7 @@ Compare up to four Pokémon side by side, and browse trainers with their Pokémo
   - a six-Pokémon team of fully evolved Pokémon. Pikachu stays as is, and dashed slots are filler picks matching the trainer's speciality and era.
   - their Masters EX sync pairs, including legendary, Ultra Beast and Paradox partners.
   - their team's total stats at Lv. 200 with everything maxed.
-- **Team rule**: at most one Mega, Gigantamax, Paradox, legendary, mythical, Ultra Beast or other powered-up form per team. Box and super legendaries (Arceus, Mewtwo, Hoopa and the like) join as a seventh "secret boss" in their strongest form (Primal, Origin, Ultra, Unbound, Crowned, Mega).
+- **Team rule**: exactly one power-up per team. A team with no Mega, Gigantamax, legendary, mythical, Paradox or Ultra Beast powers up its ace: Mega if it can, otherwise Gigantamax, otherwise Tera into the trainer's speciality type. Never more than one Mega, Gigantamax, Paradox, legendary, mythical, Ultra Beast or other powered-up form per team. Box and super legendaries (Arceus, Mewtwo, Hoopa and the like) join as a seventh "secret boss" in their strongest form (Primal, Origin, Ultra, Unbound, Crowned, Mega).
 - **Power-up hints**: badges for Mega, Gigantamax and Tera, and a panel with the forms and suggested Tera types for attack and defence. Tera is open to every generation, unless the Pokémon has a Mega or Gigantamax form, or is legendary, Paradox or an Ultra Beast. Mythicals qualify if their base stat total is 600 or less. Paldea aces show their canonical Tera type.
 - **Lv. 200 max mode**: for fun, every stat at full potential (31 IVs, 252 EVs, boosting nature) at Lv. 200, so you can face your Legends: Z-A rival.
 

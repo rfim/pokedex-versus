@@ -476,6 +476,17 @@ function fullTeam(t) {
   const pick = list => { const top = list.slice(0, 24); while (out.length < 6 && top.length) push(top.splice(Math.floor(rand() * top.length), 1)[0]); };
   pick(FILL_POOL.filter(p => sp(p).gen <= gen && p.t.some(x => types.includes(x))));
   pick(FILL_POOL.filter(p => sp(p).gen <= gen));
+  // Every team carries exactly one power-up. With no special already, the ace (last real
+  // member, falling back down the team) powers up: Mega if it can, else Gigantamax, else Tera.
+  if (!out.some(o => isSpecial(o.p))) {
+    const order = [...out.keys()].sort((x, y) => (out[x].filled - out[y].filled) || y - x);
+    for (const k of order) {
+      const p = out[k].p, f = formsOf(p.s);
+      if (p.d && f.mega.length) { out[k] = { p: f.mega[0], filled: out[k].filled, power: "mega" }; break; }
+      if (p.d && f.gmax.length) { out[k] = { p: f.gmax[0], filled: out[k].filled, power: "gmax" }; break; }
+      if (canTera(p)) { out[k].power = "tera"; break; }
+    }
+  }
   return out;
 }
 function syncPairs(t) {
@@ -598,15 +609,16 @@ function renderTrainers() {
     const power = team.reduce((sum, { p }) => sum + p.st.reduce((a, b, k) => a + statVal(b, k, "lv200"), 0), 0);
     const sync = syncPairs(t);
     const boss = secretBoss(t);
-    const realTeam = team.filter(o => !o.filled).map(o => o.p);
-    const teraType = t.tera || (t.r === "Paldea" ? t.ty : null);
-    const teraAce = teraType && realTeam.length && canTera(realTeam[realTeam.length - 1]) ? realTeam[realTeam.length - 1] : null;
+    const teraAce = (team.find(o => o.power === "tera") || {}).p || null;
+    const teraType = teraAce ? (t.tera && canTera(teraAce) ? t.tera : t.ty || teraAce.t[0]) : null;
+    const powered = team.find(o => o.power === "mega" || o.power === "gmax");
     const bossPower = boss ? boss.st.reduce((a, b, k) => a + statVal(b, k, "lv200"), 0) : 0;
     return `<article class="tcard" style="--tc:${trainerColor(t)}" id="t-${idx}">
       <div class="tcard-top"><div class="mono-av" aria-hidden="true">${initials(t.n)}</div>
         <div style="min-width:0"><h3>${esc(t.n)}</h3><div class="role">${esc(t.role)} · ${esc(t.r)}</div></div>
         <div style="margin-left:auto">${t.ty ? typeBadge(t.ty) : ""}</div></div>
       <div class="team">${team.map(({ p, filled }, k) => `<button type="button" class="${filled ? "filled" : ""}${teraAce && p === teraAce ? " tera-ace" : ""}" data-add="${p.id}" title="${filled ? "Filler pick to complete the six. " : ""}Add ${esc(p.n)} to compare">${pixImg(p)}</button>`).join("")}</div>
+      ${powered ? `<p class="tera-line"><span class="pw pw-${powered.power}">${powered.power === "mega" ? "Mega" : "G-Max"}</span> Ace powers up as ${esc(powered.p.n)}</p>` : ""}
       ${teraAce ? `<p class="tera-line"><span class="pw pw-tera">Tera</span> Ace ${esc(teraAce.n)} Terastallizes into ${typeBadge(teraType)}</p>` : ""}
       ${boss ? `<button type="button" class="boss" data-add="${boss.id}" title="Add ${esc(boss.n)} to compare">${pixImg(boss)}<span><span class="boss-k">Pokémon #7 · Secret boss</span><b>${esc(boss.n)}</b><span class="mini">Waits after the final battle · BST ${bst(boss)}</span></span></button>` : ""}
       ${team.some(o => o.filled) ? `<p class="fill-note">Dashed slots are filler picks to complete the six.</p>` : ""}
