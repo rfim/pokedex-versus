@@ -9,7 +9,7 @@ from common import ENGLISH, read_bronze, write_silver
 
 # Cosmetic or event-only forms that add nothing to a comparison.
 SKIP_FORMS = re.compile(r"(totem|-cap$|cosplay|-rock-star|-belle|-pop-star|-phd|-libre|starter|minior-(?!red-meteor)"
-                        r"|-busted|eternamax|-family-of-three|-build$|-mode$|pikachu-.*|zygarde-10-power|koraidon-|miraidon-)")
+                        r"|-busted|-family-of-three|-build$|-mode$|pikachu-.*|zygarde-10-power|koraidon-|miraidon-)")
 SV_DEXES = {"31", "32", "33"}   # Paldea, Kitakami, Blueberry
 ZA_DEXES = {"34", "35"}         # Lumiose City, Hyperspace
 STAT_KEYS = ["hp", "attack", "defense", "sp_attack", "sp_defense", "speed"]

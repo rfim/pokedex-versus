@@ -417,7 +417,7 @@ const BOX = new Set([249, 250, 382, 383, 384, 483, 484, 487, 643, 644, 646, 716,
 const SUPER = new Set([...BOX, 150, 493, 720]);
 const BOSS_FORM = { 150: 10044, 382: 10077, 383: 10078, 384: 10079, 483: 10245, 484: 10246, 487: 10007, 646: 10022, 718: 10120, 720: 10086, 800: 10157, 888: 10188, 889: 10189, 898: 10194, 1024: 10277 };
 function secretBoss(t) {
-  const names = [...t.team, ...(t.boss ? [t.boss] : [])];
+  const names = [...(t.boss ? [t.boss] : []), ...t.team]; // a named boss wins over legendaries in the team
   const p = names.map(findByName).find(p => p && SUPER.has(p.s));
   // A boss named in a specific form (e.g. "Mega Zygarde") keeps it; otherwise use its strongest form.
   return p ? (p.d ? BY_ID.get(BOSS_FORM[p.s]) || p : p) : null;
@@ -432,12 +432,12 @@ function formsOf(sid) {
     FORMS = {};
     for (const p of DEX.pokemon) {
       const f = (FORMS[p.s] = FORMS[p.s] || { mega: [], gmax: [] });
-      if (p.mega) f.mega.push(p); else if (/^Gigantamax /.test(p.n)) f.gmax.push(p);
+      if (p.mega) f.mega.push(p); else if (/^(Gigantamax|Eternamax) /.test(p.n)) f.gmax.push(p);
     }
   }
   return FORMS[sid] || { mega: [], gmax: [] };
 }
-const isGmax = p => /^Gigantamax /.test(p.n);
+const isGmax = p => /^(Gigantamax|Eternamax) /.test(p.n);
 function canTera(p) {
   const f = formsOf(p.s);
   const lab = specialLabel(p);
