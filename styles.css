@@ -216,10 +216,10 @@ h2 { font-size: 1.25rem; font-weight: 700; }
 /* ---------- trainers ---------- */
 .tr-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; padding-block: 24px 8px; align-items: start; }
 @media (max-width: 860px) { .tr-hero { grid-template-columns: minmax(0, 1fr); } }
-.pmex-card { background: var(--ink); color: var(--bg); border-radius: var(--r); padding: 16px 18px; font-size: 0.9rem; }
-.pmex-card h2 { font-size: 1.05rem; margin-bottom: 6px; color: var(--s2); }
-.pmex-card p { margin: 0 0 8px; }
-.pmex-card .fine { opacity: 0.75; font-size: 0.8rem; margin: 0; }
+.rules-card { background: var(--ink); color: var(--bg); border-radius: var(--r); padding: 16px 18px; font-size: 0.88rem; }
+.rules-card h2 { font-size: 1.05rem; margin-bottom: 8px; color: var(--s2); }
+.rules-card ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.rules-card b { color: var(--s2); }
 .tr-filters { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; padding-block: 16px 4px; }
 .field { display: grid; gap: 4px; font: 600 0.7rem var(--mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
 .field input, .field select { font: 500 0.95rem var(--body); text-transform: none; letter-spacing: 0; padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); min-width: 0; }
@@ -238,15 +238,6 @@ h2 { font-size: 1.25rem; font-weight: 700; }
 .team button { aspect-ratio: 1; max-width: 100%; }
 .team img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
 .tfact { font-size: 0.85rem; margin: 0; color: var(--muted); }
-.sync-list { display: grid; gap: 4px; border: 1px dashed var(--s2); border-radius: 8px; padding: 6px 8px; }
-.sync-list > .ex { justify-self: start; }
-.sync { display: flex; align-items: center; gap: 8px; font: inherit; font-size: 0.82rem; text-align: left; color: var(--ink); background: none; border: 0; border-radius: 6px; padding: 2px 4px; cursor: pointer; }
-.sync:hover { background: var(--panel-2); }
-.sync img { flex: none; }
-.sync > span { flex: 1; min-width: 0; }
-.sync { width: 100%; }
-.sync i { color: var(--muted); }
-.sync.legend img { background: color-mix(in srgb, var(--s2) 22%, transparent); border-radius: 50%; }
 .team button.filled { outline: 1.5px dashed var(--line); outline-offset: -2px; opacity: 0.8; }
 .boss { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; cursor: pointer; border: 0; border-radius: 10px; padding: 6px 10px 6px 6px; color: #f4f1ff; font: inherit;
   background: radial-gradient(120% 140% at 0% 50%, #6a3fd6 0%, #2a1650 55%, #120a24 100%); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12); }
@@ -257,9 +248,6 @@ h2 { font-size: 1.25rem; font-weight: 700; }
 .boss .boss-k { font: 700 0.62rem var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: #f2c53d; }
 .boss .mini { color: #c9bfe8; font-size: 0.72rem; }
 .fill-note { margin: -4px 0 0; font-size: 0.72rem; color: var(--muted); }
-.sync img { width: 36px; height: 36px; image-rendering: pixelated; }
-.sync b { font-family: var(--display); }
-.sync-list .ex { white-space: nowrap; font: 700 0.62rem var(--mono); background: var(--s2); color: #1a1300; padding: 1px 5px; border-radius: 3px; letter-spacing: 0.08em; }
 .tcard-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
 .debut { font: 400 0.72rem var(--mono); color: var(--muted); }
 

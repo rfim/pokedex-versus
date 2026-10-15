@@ -417,7 +417,7 @@ const BOX = new Set([249, 250, 382, 383, 384, 483, 484, 487, 643, 644, 646, 716,
 const SUPER = new Set([...BOX, 150, 493, 720]);
 const BOSS_FORM = { 150: 10044, 382: 10077, 383: 10078, 384: 10079, 483: 10245, 484: 10246, 487: 10007, 646: 10022, 718: 10120, 720: 10086, 800: 10157, 888: 10188, 889: 10189, 898: 10194, 1024: 10277 };
 function secretBoss(t) {
-  const names = [...t.team, ...(t.leg || []).map(x => x[0]), ...(t.pmex || [])];
+  const names = [...t.team, ...(t.boss ? [t.boss] : [])];
   const p = names.map(findByName).find(p => p && SUPER.has(p.s));
   return p ? BY_ID.get(BOSS_FORM[p.s]) || p : null;
 }
@@ -459,7 +459,7 @@ function teraPicks(p) {
   const atk = p.st[1] === p.st[3] ? "mixed" : p.st[1] > p.st[3] ? "physical" : "special";
   return { offense: p.t, defense: scored[0], atk };
 }
-const REGION_TO_GEN = { Kanto: 1, Johto: 2, Hoenn: 3, Sinnoh: 4, Hisui: 4, Unova: 5, Kalos: 6, Alola: 7, Galar: 8, Paldea: 9, Pasio: 9 };
+const REGION_TO_GEN = { Kanto: 1, Johto: 2, Hoenn: 3, Sinnoh: 4, Hisui: 4, Unova: 5, Kalos: 6, Alola: 7, Galar: 8, Paldea: 9 };
 let FILL_POOL = null;
 function seeded(str) { let h = 2166136261; for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0) / 4294967296); }
 function fullTeam(t) {
@@ -469,7 +469,6 @@ function fullTeam(t) {
   const out = base.filter(p => !isSpecial(p) || p === ace).map(p => ({ p, filled: false }));
   const have = new Set(out.map(o => o.p.s));
   const push = p => { if (out.length < 6 && !have.has(p.s)) { have.add(p.s); out.push({ p, filled: true }); } };
-  (t.pmex || []).map(findByName).filter(Boolean).map(toFinal).forEach(p => !isSpecial(p) && !SUPER.has(p.s) && push(p));
   const gen = REGION_TO_GEN[t.r] || 9;
   const types = t.ty ? [t.ty] : [...new Set(out.flatMap(o => o.p.t))];
   const rand = seeded(t.n);
@@ -489,12 +488,9 @@ function fullTeam(t) {
   }
   return out;
 }
-function syncPairs(t) {
-  return [...(t.pmex || []).map(n => [n, ""]), ...(t.leg || [])].map(([n, outfit]) => ({ p: findByName(n), outfit })).filter(x => x.p);
-}
 function trainersUsing(p) {
   const base = norm(sp(p).n);
-  return trainers.filter(t => finalTeam(t).some(m => m.s === p.s) || (t.pmex || []).some(n => norm(n) === base));
+  return trainers.filter(t => finalTeam(t).some(m => m.s === p.s) || (t.boss && norm(t.boss) === base));
 }
 
 // computed superlatives across every default species
@@ -525,7 +521,7 @@ function factsPanel(sel) {
     if (s.eg.includes("no-eggs") && !s.leg && !s.myth && !s.baby) add("Can't breed", `${name} is in the Undiscovered egg group, so it can't produce eggs.`, i);
     if (s.fc >= 30) add("Well documented", `${name} has ${s.fc} English Pokédex entries across the games.`, i);
     const tu = trainersUsing(p);
-    if (tu.length) add("Trainer favourite", `${name} is on the team of ${tu.slice(0, 6).map(t => `<button class="tlink" type="button" data-trainer="${esc(t.n)}">${esc(t.n)}</button>`).join(" ")}${tu.length > 6 ? ` and ${tu.length - 6} more` : ""}.${tu.some(t => (t.pmex || []).some(n => norm(n) === norm(s.n))) ? " It is also a Pokémon Masters EX sync-pair partner." : ""}`, i);
+    if (tu.length) add("Trainer favourite", `${name} is on the team of ${tu.slice(0, 6).map(t => `<button class="tlink" type="button" data-trainer="${esc(t.n)}">${esc(t.n)}</button>`).join(" ")}${tu.length > 6 ? ` and ${tu.length - 6} more` : ""}.`, i);
   });
   if (sel.length > 1) {
     const ps = sel.map(o => o.p);
@@ -599,15 +595,14 @@ function renderTrainerFilters() {
   $("#tr-role").innerHTML = `<option value="">All roles</option>` + roles.map(r => `<option>${r}</option>`).join("");
 }
 function renderTrainers() {
-  const q = norm($("#tr-q").value), region = $("#tr-region").value, role = $("#tr-role").value, onlyPmex = $("#tr-pmex").checked, onlyLeg = $("#tr-leg").checked;
-  const list = trainers.filter(t => (!region || t.r === region) && (!role || t.role === role) && (!onlyPmex || syncPairs(t).length) && (!onlyLeg || syncPairs(t).some(x => specialLabel(x.p))) &&
-    (!q || norm(t.n).includes(q) || (t.ty && t.ty.includes(q)) || t.team.some(n => norm(n).includes(q)) || syncPairs(t).some(x => norm(x.p.n).includes(q))));
-  $("#tr-count").textContent = `${list.length} trainer${list.length === 1 ? "" : "s"}${onlyLeg ? " with a legendary, Ultra Beast or Paradox sync pair" : onlyPmex ? " with a Masters EX sync pair" : ""}`;
+  const q = norm($("#tr-q").value), region = $("#tr-region").value, role = $("#tr-role").value, onlyBoss = $("#tr-boss").checked;
+  const list = trainers.filter(t => (!region || t.r === region) && (!role || t.role === role) && (!onlyBoss || secretBoss(t)) &&
+    (!q || norm(t.n).includes(q) || (t.ty && t.ty.includes(q)) || t.team.some(n => norm(n).includes(q)) || (t.boss && norm(t.boss).includes(q))));
+  $("#tr-count").textContent = `${list.length} trainer${list.length === 1 ? "" : "s"}${onlyBoss ? " with a secret boss" : ""}`;
   $("#tr-grid").innerHTML = list.map(t => {
     const idx = trainers.indexOf(t);
     const team = fullTeam(t);
     const power = team.reduce((sum, { p }) => sum + p.st.reduce((a, b, k) => a + statVal(b, k, "lv200"), 0), 0);
-    const sync = syncPairs(t);
     const boss = secretBoss(t);
     const teraAce = (team.find(o => o.power === "tera") || {}).p || null;
     const teraType = teraAce ? (t.tera && canTera(teraAce) ? t.tera : t.ty || teraAce.t[0]) : null;
@@ -622,7 +617,6 @@ function renderTrainers() {
       ${teraAce ? `<p class="tera-line"><span class="pw pw-tera">Tera</span> Ace ${esc(teraAce.n)} Terastallizes into ${typeBadge(teraType)}</p>` : ""}
       ${boss ? `<button type="button" class="boss" data-add="${boss.id}" title="Add ${esc(boss.n)} to compare">${pixImg(boss)}<span><span class="boss-k">Pokémon #7 · Secret boss</span><b>${esc(boss.n)}</b><span class="mini">Waits after the final battle · BST ${bst(boss)}</span></span></button>` : ""}
       ${team.some(o => o.filled) ? `<p class="fill-note">Dashed slots are filler picks to complete the six.</p>` : ""}
-      ${sync.length ? `<div class="sync-list"><span class="ex">MASTERS EX SYNC PAIRS</span>${sync.map(({ p, outfit }) => { const lab = specialLabel(p); return `<button type="button" class="sync${lab ? " legend" : ""}" data-add="${p.id}" title="Add ${esc(p.n)} to compare">${pixImg(p)}<span>${outfit ? `<i>${esc(outfit)}</i> ` : ""}<b>${esc(t.n)} &amp; ${esc(sp(p).n)}</b>${lab ? ` <span class="tag">${lab}</span>` : ""}</span></button>`; }).join("")}</div>` : ""}
       <p class="tfact">${esc(t.fact)}</p>
       <div class="tcard-foot"><span class="debut">${esc(t.debut)}<br>Lv. 200 maxed team power: <b>${power.toLocaleString("en-GB")}</b>${boss ? `<br>With secret boss: <b>${(power + bossPower).toLocaleString("en-GB")}</b>` : ""}</span><button class="btn small" type="button" data-team="${idx}">Compare team</button></div>
     </article>`;
@@ -655,7 +649,7 @@ document.addEventListener("click", e => {
     location.hash = "#compare"; window.scrollTo({ top: 0 }); toast(`Comparing ${tr.n}'s team`);
   }
   else if (t.dataset.trainer) {
-    location.hash = "#trainers"; $("#tr-q").value = t.dataset.trainer; $("#tr-region").value = ""; $("#tr-role").value = ""; $("#tr-pmex").checked = false; $("#tr-leg").checked = false; renderTrainers();
+    location.hash = "#trainers"; $("#tr-q").value = t.dataset.trainer; $("#tr-region").value = ""; $("#tr-role").value = ""; $("#tr-boss").checked = false; renderTrainers();
   }
   else if (t.id === "btn-random") randomFour();
   else if (t.id === "btn-clear") setSlots([]);
@@ -664,7 +658,7 @@ document.addEventListener("click", e => {
     navigator.clipboard?.writeText(url).then(() => toast("Link copied"), () => toast("Copy the address bar to share this comparison"));
   }
 });
-["#tr-q", "#tr-region", "#tr-role", "#tr-pmex", "#tr-leg"].forEach(s => $(s).addEventListener("input", renderTrainers));
+["#tr-q", "#tr-region", "#tr-role", "#tr-boss"].forEach(s => $(s).addEventListener("input", renderTrainers));
 window.addEventListener("hashchange", route);
 
 // ---------- boot ----------

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pokédex Versus</title>
-<meta name="description" content="Compare up to four Pokémon side by side: stats, matchups, size, breeding, evolution and fun facts. Plus trainers and Pokémon Masters EX sync pairs.">
+<meta name="description" content="Compare up to four Pokémon side by side: stats, matchups, size, breeding, evolution and fun facts. Plus trainers with maxed-out teams and secret bosses.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -20,7 +20,7 @@
     </a>
     <nav class="tabs" role="tablist">
       <a href="#compare" class="tab" data-view="compare">Compare</a>
-      <a href="#trainers" class="tab" data-view="trainers">Trainers &amp; Masters EX</a>
+      <a href="#trainers" class="tab" data-view="trainers">Trainers</a>
     </nav>
   </div>
 </header>
@@ -48,20 +48,23 @@
   <section class="tr-hero">
     <div>
       <h1>Trainers</h1>
-      <p class="sub">Gym Leaders, Elite Four, Champions, rivals and villains from Kanto to Paldea, with six-Pokémon teams (fully evolved) and their Masters EX sync pairs, including legendary, Ultra Beast and Paradox partners. Team rule: at most one Mega, Paradox, legendary, Ultra Beast or powered-up Pokémon per six, and box or super legendaries (Arceus, Mewtwo, Hoopa and the like) step in as a seventh <b>secret boss</b>. Tap <b>Compare team</b> to send four of their Pokémon to the compare view.</p>
+      <p class="sub">Gym Leaders, Elite Four, Champions, rivals, villains and every main-series protagonist, from Kanto to Paldea. Each team is maxed out for battle. Tap any Pokémon to add it to the compare view, or <b>Compare team</b> to send four at once.</p>
     </div>
-    <aside class="pmex-card">
-      <h2>Pokémon Masters EX</h2>
-      <p>DeNA's mobile game (launched August 2019, renamed <em>Masters EX</em> for its first anniversary) pairs trainers with one Pokémon as a <b>sync pair</b> on the artificial island of Pasio. Teams of three pairs fight 3-on-3 in real time and unleash <b>sync moves</b>. Sync pairs fill roles: Strike, Tech, Support, and later Sprint and Field. Maxing a pair to 5★ unlocks its <b>EX</b> outfit.</p>
-      <p class="fine">Partners shown are each trainer's signature sync pair. Many trainers have extra variants such as seasonal outfits, Sygna Suits and Neo Champion versions.</p>
+    <aside class="rules-card">
+      <h2>Team rules</h2>
+      <ul>
+        <li><b>Six, fully evolved.</b> Dashed slots are filler picks matching the trainer's speciality and era.</li>
+        <li><b>Exactly one power-up.</b> One Mega, Gigantamax, Tera ace, sub-legendary, mythical, Paradox or Ultra Beast per team.</li>
+        <li><b>Secret boss.</b> Box and super legendaries (Arceus, Mewtwo, Hoopa…) wait as a seventh Pokémon, in their strongest form.</li>
+        <li><b>Lv. 200, maxed.</b> Team power counts every stat with 31 IVs, 252 EVs and a boosting nature.</li>
+      </ul>
     </aside>
   </section>
   <section class="tr-filters">
     <label class="field"><span>Search</span><input id="tr-q" type="search" placeholder="Name, Pokémon or type" autocomplete="off"></label>
     <label class="field"><span>Region</span><select id="tr-region"></select></label>
     <label class="field"><span>Role</span><select id="tr-role"></select></label>
-    <label class="check"><input id="tr-pmex" type="checkbox"> Masters EX sync pairs only</label>
-    <label class="check"><input id="tr-leg" type="checkbox"> Legendary, Ultra Beast &amp; Paradox pairs</label>
+    <label class="check"><input id="tr-boss" type="checkbox"> Has a secret boss</label>
   </section>
   <p class="tr-count" id="tr-count"></p>
   <section class="tr-grid" id="tr-grid"></section>
