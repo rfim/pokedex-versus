@@ -1,5 +1,5 @@
 {
-  "name": "pokedex-versus",
+  "name": "pokemon-lakehouse",
   "version": "1.0.0",
   "private": true,
   "description": "Compare up to four Pokémon. Web app, installable PWA and Android app (Capacitor).",

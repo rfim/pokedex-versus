@@ -1,4 +1,4 @@
-# Pokédex Versus
+# Pokémon Lakehouse
 
 Compare up to four Pokémon side by side, and browse trainers with maxed-out teams and secret bosses.
 
@@ -26,14 +26,40 @@ Compare up to four Pokémon side by side, and browse trainers with maxed-out tea
 ## Mobile apps
 
 - **Install from the browser (Android, iPhone, desktop):** open the live site and tap **Install app**. On iPhone, tap Share, then **Add to Home Screen**. It runs full-screen with a bottom tab bar, and once opened it works offline (service worker in `sw.js`).
-- **Android APK:** every push to `main` runs `.github/workflows/android.yml`. It wraps the site with [Capacitor](https://capacitorjs.com) and publishes `pokedex-versus.apk` to the [android-latest release](https://github.com/rfim/pokedex-versus/releases/tag/android-latest). Download it on your phone and open it to install.
+- **Android APK:** every push to `main` runs `.github/workflows/android.yml`. It wraps the site with [Capacitor](https://capacitorjs.com) and publishes `pokemon-lakehouse.apk` to the [android-latest release](https://github.com/rfim/pokedex-versus/releases/tag/android-latest). Download it on your phone and open it to install.
 - **Build it yourself:** `npm install`, `npm run build:www`, `npx cap add android`, `npx cap open android`. This needs Android Studio. For iOS use `npx cap add ios`, which needs a Mac with Xcode.
 
-## Data
+## Data: the lakehouse
 
-`data/dex.json` is built from the [PokéAPI](https://github.com/PokeAPI/pokeapi) CSV dataset. It covers Gen I–IX: all 1,025 species plus Mega, regional and other battle forms, including the Legends: Z-A Megas and Gigantamax forms. Artwork loads from the PokéAPI sprites repository.
+The app's data comes from a small **medallion pipeline** in `pipeline/` (Python stdlib only). It's the starting point for a bigger data engineering project.
 
-Trainer data is curated by hand in `data/trainers.js`.
+```
+PokéAPI CSVs ──► bronze ──────────────► silver ─────────────────► gold
+                 lake/bronze/pokeapi/   lake/silver/*.jsonl        data/dex.json
+                 raw tables + manifest  pokemon, species,          compact file the
+                 (22 tables)            abilities, type_efficacy   web + mobile apps read
+```
+
+```sh
+python3 pipeline/run.py            # full refresh: download → clean → publish
+python3 pipeline/run.py --offline  # rebuild silver + gold from existing bronze files
+```
+
+- **Bronze** (`bronze_ingest.py`): lands the raw PokéAPI tables unchanged, with an ingestion manifest of row counts and a timestamp.
+- **Silver** (`silver_transform.py`): typed, English-only tables. That means one row per battle-relevant form, with types, stats, abilities, Mega/Gigantamax flags, species facts, the latest Pokédex entry, the evolution method, and whether it's in Scarlet & Violet and Legends: Z-A.
+- **Gold** (`gold_publish.py`): the compact `data/dex.json` the site serves.
+- **Seed data**: trainer teams and secret bosses are curated by hand in `data/trainers.js`. Team rules (power-ups, recruits, starters) are applied in the app.
+
+`lake/` is generated and git-ignored. Coverage is Gen I–IX: 1,025 species plus Mega, regional and Gigantamax forms, including the Legends: Z-A Megas.
+
+### Roadmap ideas
+
+- Store silver and gold as **Parquet / Delta / Iceberg** tables and query them with DuckDB or Spark.
+- **Orchestrate** with Airflow, Dagster or a scheduled GitHub Action, with incremental loads driven by the bronze manifest.
+- **Data contracts and tests**: schema checks, row-count expectations and uniqueness on `pokemon_id`, for example with Great Expectations or dbt tests.
+- **dbt models** for gold marts: team power, type coverage, matchup matrices.
+- Move the **team rules** (one power-up, starters per player, recruits) into gold tables, so the app only renders them.
+- Add more sources: moves and learnsets, competitive usage stats, encounter locations.
 
 ## Run locally
 

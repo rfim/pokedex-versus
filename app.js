@@ -1,4 +1,4 @@
-/* Pokédex Versus — compare up to four Pokémon. Vanilla JS, data from data/dex.json (built from PokéAPI). */
+/* Pokémon Lakehouse — compare up to four Pokémon. Vanilla JS, data from data/dex.json (built from PokéAPI). */
 (() => {
 "use strict";
 

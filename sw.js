@@ -1,7 +1,7 @@
-// Pokédex Versus service worker: works offline once opened.
+// Pokémon Lakehouse service worker: works offline once opened.
 // App files: network first (so updates arrive), cache as fallback.
 // Artwork and fonts: cache first, since they never change.
-const VERSION = "pv-v1";
+const VERSION = "pl-v2";
 const SHELL = ["./", "index.html", "styles.css", "app.js", "data/dex.json", "data/trainers.js", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", e => {

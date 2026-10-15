@@ -1,6 +1,6 @@
 {
-  "name": "Pokédex Versus",
-  "short_name": "Dex Versus",
+  "name": "Pokémon Lakehouse",
+  "short_name": "Poké Lakehouse",
   "description": "Compare up to four Pokémon, and browse trainers with maxed-out teams and secret bosses.",
   "id": "./",
   "start_url": "./",

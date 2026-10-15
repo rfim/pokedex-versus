@@ -48,22 +48,22 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
-          cp app/build/outputs/apk/debug/app-debug.apk ../pokedex-versus.apk
+          cp app/build/outputs/apk/debug/app-debug.apk ../pokemon-lakehouse.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pokedex-versus-apk
-          path: pokedex-versus.apk
+          name: pokemon-lakehouse-apk
+          path: pokemon-lakehouse.apk
 
       - name: Publish to the "android-latest" release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: android-latest
-          name: Pokédex Versus for Android (latest build)
+          name: Pokémon Lakehouse for Android (latest build)
           body: |
-            Latest Android build of Pokédex Versus, built automatically from `main` (${{ github.sha }}).
+            Latest Android build of Pokémon Lakehouse, built automatically from `main` (${{ github.sha }}).
 
-            **Install:** download `pokedex-versus.apk` on your Android phone and open it. Allow "install unknown apps" for your browser when asked.
+            **Install:** download `pokemon-lakehouse.apk` on your Android phone and open it. Allow "install unknown apps" for your browser when asked.
           prerelease: false
           make_latest: true
-          files: pokedex-versus.apk
+          files: pokemon-lakehouse.apk
