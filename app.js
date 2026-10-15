@@ -419,7 +419,8 @@ const BOSS_FORM = { 150: 10044, 382: 10077, 383: 10078, 384: 10079, 483: 10245, 
 function secretBoss(t) {
   const names = [...t.team, ...(t.boss ? [t.boss] : [])];
   const p = names.map(findByName).find(p => p && SUPER.has(p.s));
-  return p ? BY_ID.get(BOSS_FORM[p.s]) || p : null;
+  // A boss named in a specific form (e.g. "Mega Zygarde") keeps it; otherwise use its strongest form.
+  return p ? (p.d ? BY_ID.get(BOSS_FORM[p.s]) || p : p) : null;
 }
 const isSpecial = p => !!(p.mega || specialLabel(p) || /primal|crowned|ultra |eternamax|gigantamax|origin/i.test(p.n));
 // Power-ups. Each Pokémon gets one route to power: Mega Evolution, Gigantamax, or Terastal.

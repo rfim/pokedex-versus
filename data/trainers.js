@@ -108,7 +108,7 @@ window.TRAINERS = [
   {n:"Malva", r:"Kalos", role:"Elite Four", ty:"fire", debut:"X & Y (2013)", team:["Pyroar","Torkoal","Chandelure","Talonflame"], fact:"A TV news anchor who is secretly a member of Team Flare."},
   {n:"Drasna", r:"Kalos", role:"Elite Four", ty:"dragon", debut:"X & Y (2013)", team:["Dragalge","Druddigon","Altaria","Noivern"], fact:"Has a cheerful grandmotherly manner with a fierce Dragon team."},
   {n:"Diantha", r:"Kalos", role:"Champion", ty:null, debut:"X & Y (2013)", team:["Hawlucha","Tyrantrum","Aurorus","Gourgeist","Goodra","Gardevoir"], fact:"A movie star and Champion whose Gardevoir Mega Evolves in battle."},
-  {n:"Lysandre", r:"Kalos", role:"Villain", ty:null, debut:"X & Y (2013)", team:["Mienshao","Honchkrow","Pyroar","Gyarados"], fact:"Founder of Lysandre Labs and boss of Team Flare."},
+  {n:"Lysandre", r:"Kalos", role:"Villain", ty:null, boss:"Mega Zygarde", debut:"X & Y (2013)", team:["Mienshao","Honchkrow","Pyroar","Gyarados"], fact:"Founder of Lysandre Labs and boss of Team Flare."},
   {n:"Professor Sycamore", r:"Kalos", role:"Professor", ty:null, debut:"X & Y (2013)", team:["Chesnaught","Delphox","Greninja","Venusaur","Charizard","Blastoise"], fact:"Researches Mega Evolution and gives you a Kanto starter too."},
   {n:"Taunie", r:"Kalos", role:"Protagonist", ty:null, debut:"Legends: Z-A (2025)", team:["Meganium","Emboar","Feraligatr"], fact:"Arrives in Lumiose City and battles up the ranks of the Z-A Royale, with Mega Evolution back at the centre of battle."},
   {n:"Urbain", r:"Kalos", role:"Protagonist", ty:null, debut:"Legends: Z-A (2025)", team:["Feraligatr","Meganium","Emboar"], fact:"The male Legends: Z-A protagonist; this time the starters are Chikorita, Tepig and Totodile."},
