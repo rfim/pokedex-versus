@@ -263,12 +263,8 @@ function profilePanel(sel) {
     <div class="panel-head"><div><span class="eyebrow">Field notes</span><h2>Profile, training &amp; breeding</h2></div><p>▲ marks the highest value</p></div>
     <div class="scroll"><table class="dt"><thead><tr><th></th>${sel.map(({ p, i }) => `<th class="c${i}"><span class="swatch"></span>${esc(p.n)}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></div></section>`;
 }
-function humanSVG() {
-  return `<svg viewBox="0 0 40 160" aria-hidden="true"><g fill="var(--muted)" opacity="0.55"><circle cx="20" cy="13" r="11"/><rect x="9" y="27" width="22" height="58" rx="9"/><rect x="11" y="80" width="8" height="78" rx="4"/><rect x="21" y="80" width="8" height="78" rx="4"/><rect x="1" y="30" width="7" height="50" rx="3.5"/><rect x="32" y="30" width="7" height="50" rx="3.5"/></g></svg>`;
-}
 function sizePanel(sel) {
-  const human = 16; // 1.6 m trainer, in decimetres
-  const maxH = Math.max(human, ...sel.map(({ p }) => p.h));
+  const maxH = Math.max(1, ...sel.map(({ p }) => p.h));
   const step = [1, 2, 5, 10, 20, 50, 100, 200].find(s => maxH / s <= 6);
   let rulers = "";
   for (let v = step; v <= maxH; v += step) rulers += `<div class="ruler" style="bottom:${(v / maxH * 100).toFixed(2)}%">${fmt(v / 10)} m</div>`;
@@ -276,12 +272,12 @@ function sizePanel(sel) {
   const maxW = Math.max(...sel.map(({ p }) => p.w));
   const weigh = sel.map(({ p, i }) => `<div class="weigh-row c${i}"><span>${esc(p.n)}</span><i style="width:${(p.w / maxW * 100).toFixed(1)}%"></i><span>${fmt(p.w / 10)} kg</span></div>`).join("");
   const pika = BY_ID.get(25);
-  const pikas = sel.map(({ p, i }) => `<li class="c${i}"><strong>${esc(p.n)}</strong> weighs as much as <b>${fmt(p.w / pika.w)}</b> Pikachu and stands <b>${fmt(p.h / human, 2)}×</b> the height of a 1.6 m trainer.</li>`).join("");
+  const pikas = sel.map(({ p, i }) => `<li class="c${i}"><strong>${esc(p.n)}</strong> weighs as much as <b>${fmt(p.w / pika.w)}</b> Pikachu.</li>`).join("");
   return `<section class="panel" id="size">
-    <div class="panel-head"><div><span class="eyebrow">To scale</span><h2>Size line-up</h2></div><p>Official artwork scaled to listed height, next to a 1.6 m trainer.</p></div>
+    <div class="panel-head"><div><span class="eyebrow">To scale</span><h2>Size line-up</h2></div><p>Official artwork scaled to each Pokémon's listed height.</p></div>
     <div class="two">
-      <div><div class="lineup">${rulers}<div class="fig human" style="flex:0 0 auto;width:${Math.max(10, human / maxH * 40)}px"><div style="height:${(human / maxH * 100).toFixed(1)}%">${humanSVG()}</div></div>${figs}</div>
-        <div class="lineup-labels"><div style="flex:0 0 auto;width:${Math.max(10, human / maxH * 40)}px"></div>${sel.map(({ p, i }) => `<div class="c${i}" style="color:var(--c)">${fmt(p.h / 10)} m</div>`).join("")}</div></div>
+      <div><div class="lineup">${rulers}${figs}</div>
+        <div class="lineup-labels">${sel.map(({ p, i }) => `<div class="c${i}" style="color:var(--c)">${fmt(p.h / 10)} m</div>`).join("")}</div></div>
       <div><h3 style="font-size:1rem;margin-bottom:10px">On the scales</h3><div class="weigh">${weigh}</div>
         <ul class="mini" style="padding-left:18px;margin-top:14px;display:grid;gap:6px">${pikas}</ul></div>
     </div></section>`;

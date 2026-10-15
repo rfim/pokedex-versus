@@ -10,7 +10,7 @@ Compare up to four Pokémon side by side, and browse trainers with their Pokémo
 - **Stats**: radar chart and bars, toggling between base stats and max stats at Lv. 50 or Lv. 100.
 - **Speed race**: who moves first.
 - **Matchups**: damage taken from all 18 types, plus a head-to-head grid of STAB attacks.
-- **Size line-up**: artwork scaled to real height next to a 1.6 m trainer, plus weight bars.
+- **Size line-up**: artwork scaled to real height plus weight bars.
 - **Profile, training & breeding**: catch rate with the odds per Poké Ball, base EXP, friendship, growth rate, egg groups and cycles, gender ratio, habitat.
 - **Abilities**, **evolution families** you can click through, and the **latest Pokédex entries**.
 - **Fun facts**: records worked out live across the whole dex (highest stats, heaviest, tallest), comparisons, breeding compatibility and type mismatches, hand-picked trivia, and which trainers use each Pokémon.
