@@ -156,7 +156,7 @@ function renderSlots() {
     return `<div class="slot" data-i="${i}">${label}
       <div class="slot-art">${artImg(p, 'width="120" height="120"')}</div>
       <div class="slot-name">${esc(p.n)}</div>
-      <div class="slot-meta"><span class="dexno">${dexNo(p.s)}</span>${p.t.map(typeBadge).join("")}${s.leg ? '<span class="tag">Legendary</span>' : s.myth ? '<span class="tag">Mythical</span>' : ""}</div>
+      <div class="slot-meta"><span class="dexno">${dexNo(p.s)}</span>${p.t.map(typeBadge).join("")}${s.leg ? '<span class="tag">Legendary</span>' : s.myth ? '<span class="tag">Mythical</span>' : ""}${powerBadges(p)}</div>
       <div class="picker" style="margin-top:8px"><input id="pick-${i}" type="search" placeholder="Swap…" autocomplete="off" aria-label="Swap Pokémon in slot ${i + 1}"><ul class="results" role="listbox" hidden></ul></div>
     </div>`;
   }).join("");
@@ -168,7 +168,7 @@ function bindPicker(input) {
   let items = [], active = 0;
   const draw = () => {
     list.hidden = !items.length;
-    list.innerHTML = items.map((p, j) => `<li role="option" data-j="${j}" aria-selected="${j === active}">${pixImg(p)}<span class="rn">${esc(p.n)}</span><span class="dexno">${dexNo(p.s)}</span>${p.t.map(typeBadge).join("")}</li>`).join("");
+    list.innerHTML = items.map((p, j) => `<li role="option" data-j="${j}" aria-selected="${j === active}">${pixImg(p)}<span class="rn">${esc(p.n)}</span><span class="dexno">${dexNo(p.s)}</span>${p.t.map(typeBadge).join("")}${powerBadges(p)}</li>`).join("");
   };
   const choose = j => { const p = items[j]; if (!p) return; slots[i] = p; renderAll(); };
   input.addEventListener("input", () => { items = search(input.value); active = 0; draw(); });
@@ -354,6 +354,26 @@ function evoPanel(sel) {
       return `<div class="col c${i}"><h3>${esc(p.n)}</h3>${body}</div>`;
     }).join("")}</div></section>`;
 }
+function powerPanel(sel) {
+  return `<section class="panel" id="powerups">
+    <div class="panel-head"><div><span class="eyebrow">Power-ups</span><h2>Mega, Gigantamax &amp; Tera</h2></div><p>Tera is open to any generation, unless the Pokémon has a Mega or Gigantamax form, or is legendary, Paradox or an Ultra Beast. Mythicals with a base stat total of 600 or less can Terastallize.</p></div>
+    <div class="cols">${sel.map(({ p, i }) => {
+      const f = formsOf(p.s), rows = [];
+      const others = [...f.mega, ...f.gmax].filter(x => x.id !== p.id);
+      const base = !p.d ? BY_ID.get(p.s) : null;
+      if (p.mega || isGmax(p)) rows.push(`<p class="ab"><b>${p.mega ? "Mega Evolved form" : "Gigantamax form"}</b>${p.mega ? `Base stat total ${bst(p)}, up ${bst(p) - bst(BY_ID.get(p.s))} from the regular form.` : "Same base stats, but towers over the battlefield and uses G-Max Moves."}</p>`);
+      if (others.length || (base && (p.mega || isGmax(p)))) rows.push(`<div class="pw-forms">${[...(base && (p.mega || isGmax(p)) ? [base] : []), ...others].map(x => `<button type="button" data-evo="${i}:${x.id}" title="Swap in ${esc(x.n)}">${pixImg(x)}<span>${esc(x.n)}</span>${x.mega ? `<span class="arrow">BST ${bst(x)}</span>` : ""}</button>`).join("")}</div>`);
+      if (canTera(p)) {
+        const t = teraPicks(p);
+        rows.push(`<p class="ab"><b>Terastal</b>Can Terastallize into any type.</p>
+          <p class="ab"><span class="pw pw-tera">Attack</span> Tera ${t.offense.map(typeBadge).join(" or ")}: same-type moves hit at 2× instead of 1.5×. It's a ${t.atk} attacker.</p>
+          <p class="ab"><span class="pw pw-tera">Defend</span> Tera ${typeBadge(t.defense.T)}: resists ${t.defense.covers} of its ${DEX.types.filter(a => multiplier(a, p.t) > 1).length} current weaknesses.</p>`);
+      } else if (!f.mega.length && !f.gmax.length && !p.mega && !isGmax(p)) {
+        rows.push(`<p class="ab"><b>No power-up</b>${specialLabel(p) === "Mythical" ? `Its base stat total of ${bst(p)} is over the 600 limit for mythical Tera, so it relies on raw stats.` : `${esc(specialLabel(p))} Pokémon rely on raw stats: no Mega, no Gigantamax and no Tera.`}</p>`);
+      }
+      return `<div class="col c${i}"><h3>${esc(p.n)} ${powerBadges(p)}</h3>${rows.join("")}</div>`;
+    }).join("")}</div></section>`;
+}
 function dexPanel(sel) {
   return `<section class="panel" id="dex">
     <div class="panel-head"><div><span class="eyebrow">Latest English entry</span><h2>Pokédex</h2></div></div>
@@ -402,6 +422,43 @@ function secretBoss(t) {
   return p ? BY_ID.get(BOSS_FORM[p.s]) || p : null;
 }
 const isSpecial = p => !!(p.mega || specialLabel(p) || /primal|crowned|ultra |eternamax|gigantamax|origin/i.test(p.n));
+// Power-ups. Each Pokémon gets one route to power: Mega Evolution, Gigantamax, or Terastal.
+// Tera is open to every generation, unless the species has a Mega or Gigantamax form,
+// or is legendary, Paradox or an Ultra Beast. Mythicals qualify if their base stat total is 600 or less.
+let FORMS = null;
+function formsOf(sid) {
+  if (!FORMS) {
+    FORMS = {};
+    for (const p of DEX.pokemon) {
+      const f = (FORMS[p.s] = FORMS[p.s] || { mega: [], gmax: [] });
+      if (p.mega) f.mega.push(p); else if (/^Gigantamax /.test(p.n)) f.gmax.push(p);
+    }
+  }
+  return FORMS[sid] || { mega: [], gmax: [] };
+}
+const isGmax = p => /^Gigantamax /.test(p.n);
+function canTera(p) {
+  const f = formsOf(p.s);
+  const lab = specialLabel(p);
+  return !f.mega.length && !f.gmax.length && !p.mega && !isGmax(p) && (!lab || (lab === "Mythical" && bst(p) <= 600));
+}
+function powerBadges(p) {
+  const f = formsOf(p.s), out = [];
+  if (p.mega) out.push(`<span class="pw pw-mega" title="Mega Evolved form">Mega</span>`);
+  else if (f.mega.length) out.push(`<span class="pw pw-mega" title="Can Mega Evolve">Mega</span>`);
+  if (isGmax(p)) out.push(`<span class="pw pw-gmax" title="Gigantamax form">G-Max</span>`);
+  else if (f.gmax.length) out.push(`<span class="pw pw-gmax" title="Has a Gigantamax form">G-Max</span>`);
+  if (canTera(p)) out.push(`<span class="pw pw-tera" title="Can Terastallize">Tera</span>`);
+  return out.join("");
+}
+function teraPicks(p) {
+  const types = DEX.types;
+  const weakTo = types.filter(a => multiplier(a, p.t) > 1);
+  const scored = types.map(T => ({ T, covers: weakTo.filter(a => multiplier(a, [T]) < 1).length, weak: types.filter(a => multiplier(a, [T]) > 1).length }))
+    .sort((a, b) => b.covers - a.covers || a.weak - b.weak);
+  const atk = p.st[1] === p.st[3] ? "mixed" : p.st[1] > p.st[3] ? "physical" : "special";
+  return { offense: p.t, defense: scored[0], atk };
+}
 const REGION_TO_GEN = { Kanto: 1, Johto: 2, Hoenn: 3, Sinnoh: 4, Hisui: 4, Unova: 5, Kalos: 6, Alola: 7, Galar: 8, Paldea: 9, Pasio: 9 };
 let FILL_POOL = null;
 function seeded(str) { let h = 2166136261; for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0) / 4294967296); }
@@ -492,7 +549,7 @@ function renderReport() {
     report.innerHTML = `<div class="welcome panel"><p><strong>Pick up to four Pokémon</strong> to compare stats, size, type matchups, speed, abilities, evolution and fun facts.</p><p>Try a quick pick above, or press <strong>Random 4</strong>.</p></div>`;
     return;
   }
-  report.innerHTML = statsPanel(sel) + speedPanel(sel) + matchupPanel(sel) + sizePanel(sel) + profilePanel(sel) + abilityPanel(sel) + evoPanel(sel) + dexPanel(sel) + factsPanel(sel);
+  report.innerHTML = statsPanel(sel) + speedPanel(sel) + matchupPanel(sel) + sizePanel(sel) + profilePanel(sel) + abilityPanel(sel) + powerPanel(sel) + evoPanel(sel) + dexPanel(sel) + factsPanel(sel);
   // animate runners from the start line to their resting spot
   const race = $(".race", report);
   if (race) {
@@ -541,12 +598,16 @@ function renderTrainers() {
     const power = team.reduce((sum, { p }) => sum + p.st.reduce((a, b, k) => a + statVal(b, k, "lv200"), 0), 0);
     const sync = syncPairs(t);
     const boss = secretBoss(t);
+    const realTeam = team.filter(o => !o.filled).map(o => o.p);
+    const teraType = t.tera || (t.r === "Paldea" ? t.ty : null);
+    const teraAce = teraType && realTeam.length && canTera(realTeam[realTeam.length - 1]) ? realTeam[realTeam.length - 1] : null;
     const bossPower = boss ? boss.st.reduce((a, b, k) => a + statVal(b, k, "lv200"), 0) : 0;
     return `<article class="tcard" style="--tc:${trainerColor(t)}" id="t-${idx}">
       <div class="tcard-top"><div class="mono-av" aria-hidden="true">${initials(t.n)}</div>
         <div style="min-width:0"><h3>${esc(t.n)}</h3><div class="role">${esc(t.role)} · ${esc(t.r)}</div></div>
         <div style="margin-left:auto">${t.ty ? typeBadge(t.ty) : ""}</div></div>
-      <div class="team">${team.map(({ p, filled }) => `<button type="button" class="${filled ? "filled" : ""}" data-add="${p.id}" title="${filled ? "Filler pick to complete the six. " : ""}Add ${esc(p.n)} to compare">${pixImg(p)}</button>`).join("")}</div>
+      <div class="team">${team.map(({ p, filled }, k) => `<button type="button" class="${filled ? "filled" : ""}${teraAce && p === teraAce ? " tera-ace" : ""}" data-add="${p.id}" title="${filled ? "Filler pick to complete the six. " : ""}Add ${esc(p.n)} to compare">${pixImg(p)}</button>`).join("")}</div>
+      ${teraAce ? `<p class="tera-line"><span class="pw pw-tera">Tera</span> Ace ${esc(teraAce.n)} Terastallizes into ${typeBadge(teraType)}</p>` : ""}
       ${boss ? `<button type="button" class="boss" data-add="${boss.id}" title="Add ${esc(boss.n)} to compare">${pixImg(boss)}<span><span class="boss-k">Pokémon #7 · Secret boss</span><b>${esc(boss.n)}</b><span class="mini">Waits after the final battle · BST ${bst(boss)}</span></span></button>` : ""}
       ${team.some(o => o.filled) ? `<p class="fill-note">Dashed slots are filler picks to complete the six.</p>` : ""}
       ${sync.length ? `<div class="sync-list"><span class="ex">MASTERS EX SYNC PAIRS</span>${sync.map(({ p, outfit }) => { const lab = specialLabel(p); return `<button type="button" class="sync${lab ? " legend" : ""}" data-add="${p.id}" title="Add ${esc(p.n)} to compare">${pixImg(p)}<span>${outfit ? `<i>${esc(outfit)}</i> ` : ""}<b>${esc(t.n)} &amp; ${esc(sp(p).n)}</b>${lab ? ` <span class="tag">${lab}</span>` : ""}</span></button>`; }).join("")}</div>` : ""}

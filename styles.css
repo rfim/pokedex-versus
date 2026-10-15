@@ -267,3 +267,18 @@ h2 { font-size: 1.25rem; font-weight: 700; }
 .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-weight: 600; z-index: 50; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } html { scroll-behavior: auto; } }
+
+/* power-up badges */
+.pw { display: inline-block; font: 700 0.6rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 6px; border-radius: 999px; color: #fff; vertical-align: 2px; margin-left: 2px; white-space: nowrap; }
+.pw-mega { background: linear-gradient(90deg, #7b2ff7, #f107a3); }
+.pw-gmax { background: linear-gradient(90deg, #d7263d, #ff6b35); }
+.pw-tera { background: linear-gradient(90deg, #00a5d6, #6dd3a0 50%, #e2b714); color: #08202a; }
+.results .pw { font-size: 0.55rem; padding: 1px 5px; }
+.pw-forms { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.pw-forms button { border: 1px solid var(--line); background: var(--panel-2); border-radius: 8px; padding: 4px; display: grid; justify-items: center; cursor: pointer; color: var(--ink); font: 500 0.72rem var(--body); max-width: 110px; text-align: center; }
+.pw-forms button:hover { border-color: var(--ink); }
+.pw-forms img { width: 56px; height: 56px; image-rendering: pixelated; }
+.pw-forms .arrow { color: var(--muted); font: 0.66rem var(--mono); }
+.col h3 .pw { font-size: 0.55rem; }
+.team button.tera-ace { outline: 2px solid #00a5d6; outline-offset: -2px; background: color-mix(in srgb, #00a5d6 14%, var(--panel-2)); }
+.tera-line { margin: -2px 0 0; font-size: 0.8rem; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
