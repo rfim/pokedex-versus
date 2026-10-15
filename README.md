@@ -21,6 +21,12 @@ Compare up to four Pokémon side by side, and browse trainers with maxed-out tea
 - **Power-up hints**: badges for Mega, Gigantamax and Tera, and a panel with the forms and suggested Tera types for attack and defence. Tera is open to every generation, unless the Pokémon has a Mega or Gigantamax form, or is legendary, Paradox or an Ultra Beast. Mythicals qualify if their base stat total is 600 or less. Paldea aces show their canonical Tera type.
 - **Lv. 200 max mode**: for fun, every stat at full potential (31 IVs, 252 EVs, boosting nature) at Lv. 200, so you can face your Legends: Z-A rival.
 
+## Mobile apps
+
+- **Install from the browser (Android, iPhone, desktop):** open the live site and tap **Install app**. On iPhone, tap Share, then **Add to Home Screen**. It runs full-screen with a bottom tab bar, and once opened it works offline (service worker in `sw.js`).
+- **Android APK:** every push to `main` runs `.github/workflows/android.yml`. It wraps the site with [Capacitor](https://capacitorjs.com) and publishes `pokedex-versus.apk` to the [android-latest release](https://github.com/rfim/pokedex-versus/releases/tag/android-latest). Download it on your phone and open it to install.
+- **Build it yourself:** `npm install`, `npm run build:www`, `npx cap add android`, `npx cap open android`. This needs Android Studio. For iOS use `npx cap add ios`, which needs a Mac with Xcode.
+
 ## Data
 
 `data/dex.json` is built from the [PokéAPI](https://github.com/PokeAPI/pokeapi) CSV dataset. It covers Gen I–IX: all 1,025 species plus Mega, regional and other battle forms, including the Legends: Z-A Megas and Gigantamax forms. Artwork loads from the PokéAPI sprites repository.

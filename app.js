@@ -661,6 +661,23 @@ document.addEventListener("click", e => {
 ["#tr-q", "#tr-region", "#tr-role", "#tr-boss"].forEach(s => $(s).addEventListener("input", renderTrainers));
 window.addEventListener("hashchange", route);
 
+// ---------- install as an app ----------
+let installEvent = null;
+const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+if (!isStandalone() && !window.Capacitor) {
+  window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvent = e; $("#btn-install").hidden = false; });
+  if (isIOS) $("#btn-install").hidden = false;
+}
+$("#btn-install").addEventListener("click", async () => {
+  if (installEvent) { installEvent.prompt(); await installEvent.userChoice; installEvent = null; $("#btn-install").hidden = true; }
+  else toast("Tap Share, then “Add to Home Screen”");
+});
+window.addEventListener("appinstalled", () => { $("#btn-install").hidden = true; toast("Installed. Open it from your home screen"); });
+if ("serviceWorker" in navigator && location.protocol === "https:" && !window.Capacitor) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+
 // ---------- boot ----------
 fetch("data/dex.json").then(r => r.json()).then(data => {
   DEX = data; SPECIES = data.species;

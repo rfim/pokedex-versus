@@ -1,0 +1,15 @@
+{
+  "name": "pokedex-versus",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Compare up to four Pokémon. Web app, installable PWA and Android app (Capacitor).",
+  "scripts": {
+    "build:www": "rm -rf www && mkdir -p www && cp -r index.html styles.css app.js manifest.webmanifest data icons www/",
+    "android": "npm run build:www && npx cap sync android && npx cap open android"
+  },
+  "devDependencies": {
+    "@capacitor/android": "6.2.0",
+    "@capacitor/cli": "6.2.0",
+    "@capacitor/core": "6.2.0"
+  }
+}
