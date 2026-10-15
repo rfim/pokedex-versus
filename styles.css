@@ -232,15 +232,26 @@ h2 { font-size: 1.25rem; font-weight: 700; }
 .mono-av { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; font: 700 1.15rem var(--display); color: #fff; background: var(--tc); flex: none; text-shadow: 0 1px 0 rgb(0 0 0 / 0.25); }
 .tcard h3 { font-size: 1.08rem; }
 .tcard .role { font-size: 0.8rem; color: var(--muted); }
-.team { display: flex; flex-wrap: wrap; gap: 2px; }
+.team { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; }
 .team button { border: 0; background: var(--panel-2); border-radius: 8px; padding: 0; cursor: pointer; }
 .team button:hover { outline: 2px solid var(--line); }
-.team img { width: 44px; height: 44px; image-rendering: pixelated; display: block; }
+.team button { aspect-ratio: 1; max-width: 100%; }
+.team img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
 .tfact { font-size: 0.85rem; margin: 0; color: var(--muted); }
-.sync { display: flex; align-items: center; gap: 8px; border: 1px dashed var(--s2); border-radius: 8px; padding: 4px 8px; font-size: 0.82rem; }
+.sync-list { display: grid; gap: 4px; border: 1px dashed var(--s2); border-radius: 8px; padding: 6px 8px; }
+.sync-list > .ex { justify-self: start; }
+.sync { display: flex; align-items: center; gap: 8px; font: inherit; font-size: 0.82rem; text-align: left; color: var(--ink); background: none; border: 0; border-radius: 6px; padding: 2px 4px; cursor: pointer; }
+.sync:hover { background: var(--panel-2); }
+.sync img { flex: none; }
+.sync > span { flex: 1; min-width: 0; }
+.sync { width: 100%; }
+.sync i { color: var(--muted); }
+.sync.legend img { background: color-mix(in srgb, var(--s2) 22%, transparent); border-radius: 50%; }
+.team button.filled { outline: 1.5px dashed var(--line); outline-offset: -2px; opacity: 0.8; }
+.fill-note { margin: -4px 0 0; font-size: 0.72rem; color: var(--muted); }
 .sync img { width: 36px; height: 36px; image-rendering: pixelated; }
 .sync b { font-family: var(--display); }
-.sync .ex { white-space: nowrap; font: 700 0.62rem var(--mono); background: var(--s2); color: #1a1300; padding: 1px 5px; border-radius: 3px; letter-spacing: 0.08em; }
+.sync-list .ex { white-space: nowrap; font: 700 0.62rem var(--mono); background: var(--s2); color: #1a1300; padding: 1px 5px; border-radius: 3px; letter-spacing: 0.08em; }
 .tcard-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
 .debut { font: 400 0.72rem var(--mono); color: var(--muted); }
 

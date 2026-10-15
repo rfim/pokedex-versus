@@ -14,11 +14,16 @@ Compare up to four Pokémon side by side, and browse trainers with their Pokémo
 - **Profile, training & breeding**: catch rate with the odds per Poké Ball, base EXP, friendship, growth rate, egg groups and cycles, gender ratio, habitat.
 - **Abilities**, **evolution families** you can click through, and the **latest Pokédex entries**.
 - **Fun facts**: records worked out live across the whole dex (highest stats, heaviest, tallest), comparisons, breeding compatibility and type mismatches, hand-picked trivia, and which trainers use each Pokémon.
-- **Trainers & Masters EX**: about 130 Gym Leaders, Elite Four, Champions, rivals, villains and Pasio originals, with signature teams and Masters EX sync partners. "Compare team" sends four of a trainer's Pokémon to the compare view.
+- **Trainers & Masters EX**: about 150 Gym Leaders, Elite Four, Champions, rivals, villains and every main-series protagonist (plus Ash and the Pasio originals). Each card shows:
+  - a six-Pokémon team of fully evolved Pokémon. Pikachu stays as is, and dashed slots are filler picks matching the trainer's speciality and era.
+  - their Masters EX sync pairs, including legendary, Ultra Beast and Paradox partners.
+  - their team's total stats at Lv. 200 with everything maxed.
+- **Team rule**: at most one Mega, Gigantamax, Paradox, legendary, mythical, Ultra Beast or other powered-up form per team. Box legendaries only appear as sync pairs.
+- **Lv. 200 max mode**: for fun, every stat at full potential (31 IVs, 252 EVs, boosting nature) at Lv. 200, so you can face your Legends: Z-A rival.
 
 ## Data
 
-`data/dex.json` is built from the [PokéAPI](https://github.com/PokeAPI/pokeapi) CSV dataset. It covers Gen I–IX: all 1,025 species plus Mega, regional and other battle forms, including the Legends: Z-A Megas. Artwork loads from the PokéAPI sprites repository.
+`data/dex.json` is built from the [PokéAPI](https://github.com/PokeAPI/pokeapi) CSV dataset. It covers Gen I–IX: all 1,025 species plus Mega, regional and other battle forms, including the Legends: Z-A Megas and Gigantamax forms. Artwork loads from the PokéAPI sprites repository.
 
 Trainer and Masters EX data is curated by hand in `data/trainers.js`.
 

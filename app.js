@@ -45,6 +45,7 @@ const TRIVIA = {
 
 const PRESETS = [
   ["Kanto starters", ["Venusaur", "Charizard", "Blastoise", "Pikachu"]],
+  ["Ash's partners", ["Pikachu", "Charizard", "Greninja", "Lucario"]],
   ["Pseudo-legendaries", ["Dragonite", "Tyranitar", "Salamence", "Garchomp"]],
   ["Paldea starters", ["Meowscarada", "Skeledirge", "Quaquaval", "Koraidon"]],
   ["Legends: Z-A Megas", ["Mega Dragonite", "Mega Greninja", "Mega Starmie", "Mega Chandelure"]],
@@ -182,16 +183,17 @@ function bindPicker(input) {
 }
 
 // ---------- report sections ----------
+const LEVELS = { lv50: 50, lv100: 100, lv200: 200 };
 function statVal(base, idx, mode) {
   if (mode === "base") return base;
-  const lv = mode === "lv50" ? 50 : 100;
+  const lv = LEVELS[mode];
   if (idx === 0) return base === 1 ? 1 : Math.floor((2 * base + 31 + 63) * lv / 100) + lv + 10;
   return Math.floor((Math.floor((2 * base + 31 + 63) * lv / 100) + 5) * 1.1);
 }
 function radarSVG(list) {
   const size = 300, c = size / 2, R = 110;
   const order = [0, 1, 2, 5, 4, 3]; // HP, Atk, Def, Spe, SpD, SpA around the circle
-  const maxv = Math.max(160, ...list.flatMap(p => p.st));
+  const maxv = Math.max(160, ...list.filter(Boolean).flatMap(p => p.st));
   const pt = (k, v) => { const a = -Math.PI / 2 + k * Math.PI / 3; const r = R * v / maxv; return [c + r * Math.cos(a), c + r * Math.sin(a)]; };
   let g = "";
   for (const f of [0.25, 0.5, 0.75, 1]) g += `<polygon class="grid" points="${order.map((_, k) => pt(k, maxv * f).join(",")).join(" ")}"/>`;
@@ -220,10 +222,12 @@ function statsPanel(sel) {
   const tmax = Math.max(...totals);
   const totalRow = `<tr class="total"><th>Total</th><td><div class="bars">${sel.map(({ i }, j) => `<div class="bar c${i}"><span>${totals[j]}</span><i><b style="width:${(totals[j] / tmax * 100).toFixed(1)}%"></b></i><span class="crown">${sel.length > 1 && totals[j] === tmax ? "★" : ""}</span></div>`).join("")}</div></td></tr>`;
   const modeBtn = (m, label) => `<button class="chip" type="button" data-statmode="${m}" aria-pressed="${statMode === m}" style="${statMode === m ? "background:var(--ink);color:var(--bg);border-color:var(--ink)" : ""}">${label}</button>`;
-  const note = statMode === "base" ? "Base stats as listed in the games." : `Maximum stat at Lv. ${statMode === "lv50" ? 50 : 100}: 31 IVs, 252 EVs and a boosting nature in every stat.`;
+  const note = statMode === "base" ? "Base stats as listed in the games."
+    : statMode === "lv200" ? "Just for fun: full potential at Lv. 200, strong enough to face your Legends: Z-A rival. Every stat has 31 IVs, 252 EVs and a boosting nature, and the standard stat formula keeps scaling past Lv. 100."
+    : `Maximum stat at Lv. ${LEVELS[statMode]}: 31 IVs, 252 EVs and a boosting nature in every stat.`;
   return `<section class="panel" id="stats">
     <div class="panel-head"><div><span class="eyebrow">Battle profile</span><h2>Stats</h2></div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">${modeBtn("base", "Base")}${modeBtn("lv50", "Lv. 50 max")}${modeBtn("lv100", "Lv. 100 max")}</div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${modeBtn("base", "Base")}${modeBtn("lv50", "Lv. 50 max")}${modeBtn("lv100", "Lv. 100 max")}${modeBtn("lv200", "Lv. 200 max · Z-A rival")}</div></div>
     <div class="two">
       <div class="radar-wrap">${radarSVG(slots)}<div class="legend">${sel.map(({ p, i }) => `<span class="c${i}"><i class="swatch"></i>${esc(p.n)} · ${bst(p)}</span>`).join("")}</div></div>
       <div><table class="stat-table">${rows}${totalRow}</table><p class="mini">${note} ★ marks the highest value.</p></div>
@@ -355,9 +359,65 @@ function dexPanel(sel) {
     <div class="panel-head"><div><span class="eyebrow">Latest English entry</span><h2>Pokédex</h2></div></div>
     <div class="cols">${sel.map(({ p, i }) => `<div class="col c${i}"><h3>${esc(sp(p).n)} <span class="dexno">${dexNo(p.s)}</span></h3><p class="dex-quote">${esc(sp(p).f || "No entry yet.")}</p></div>`).join("")}</div></section>`;
 }
+// Trainer teams show fully evolved Pokémon. Pikachu stays as is (it's the series mascot),
+// and branching lines (Eevee, Cosmog…) or regional forms keep the listed Pokémon.
+let CHILDREN = null;
+function finals(sid) {
+  if (!CHILDREN) {
+    CHILDREN = {};
+    for (const [id, s] of Object.entries(SPECIES)) if (s.from) (CHILDREN[s.from] = CHILDREN[s.from] || []).push(Number(id));
+  }
+  const kids = CHILDREN[sid];
+  return kids ? kids.flatMap(finals) : [sid];
+}
+function toFinal(p) {
+  if (!p.d || p.s === 25) return p;
+  const f = [...new Set(finals(p.s))];
+  return f.length === 1 ? BY_ID.get(f[0]) || p : p;
+}
+function finalTeam(t) {
+  const seen = new Set();
+  return t.team.map(findByName).filter(Boolean).map(toFinal).filter(p => !seen.has(p.id) && seen.add(p.id));
+}
+// Every card shows six. Slots the games leave empty are filled with fully evolved,
+// non-legendary Pokémon of the trainer's speciality (or their team's types) from their era.
+const UB = new Set([793, 794, 795, 796, 797, 798, 799, 803, 804, 805, 806]);
+const PARADOX = new Set([984, 985, 986, 987, 988, 989, 990, 991, 992, 993, 994, 995, 1005, 1006, 1007, 1008, 1009, 1010, 1020, 1021, 1022, 1023]);
+function specialLabel(p) {
+  const s = sp(p);
+  if (PARADOX.has(p.s)) return s.leg ? "Paradox legendary" : "Paradox";
+  if (UB.has(p.s)) return "Ultra Beast";
+  return s.myth ? "Mythical" : s.leg ? "Legendary" : "";
+}
+// Team rule: box legendaries never join the six, and a team holds at most one "special":
+// a Mega, Paradox, other legendary or mythical, Ultra Beast, or powered-up form.
+const BOX = new Set([249, 250, 382, 383, 384, 483, 484, 487, 643, 644, 646, 716, 717, 718, 789, 790, 791, 792, 800, 888, 889, 890, 898, 1007, 1008, 1024]);
+const isSpecial = p => !!(p.mega || specialLabel(p) || /primal|crowned|ultra |eternamax|gigantamax|origin/i.test(p.n));
+const REGION_TO_GEN = { Kanto: 1, Johto: 2, Hoenn: 3, Sinnoh: 4, Hisui: 4, Unova: 5, Kalos: 6, Alola: 7, Galar: 8, Paldea: 9, Pasio: 9 };
+let FILL_POOL = null;
+function seeded(str) { let h = 2166136261; for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0) / 4294967296); }
+function fullTeam(t) {
+  if (!FILL_POOL) { finals(1); FILL_POOL = DEFAULTS.filter(p => !CHILDREN[p.s] && !specialLabel(p) && !sp(p).baby).sort((a, b) => bst(b) - bst(a)); }
+  const base = finalTeam(t).filter(p => !BOX.has(p.s));
+  const ace = [...base].reverse().find(isSpecial);
+  const out = base.filter(p => !isSpecial(p) || p === ace).map(p => ({ p, filled: false }));
+  const have = new Set(out.map(o => o.p.s));
+  const push = p => { if (out.length < 6 && !have.has(p.s)) { have.add(p.s); out.push({ p, filled: true }); } };
+  (t.pmex || []).map(findByName).filter(Boolean).map(toFinal).forEach(p => !isSpecial(p) && !BOX.has(p.s) && push(p));
+  const gen = REGION_TO_GEN[t.r] || 9;
+  const types = t.ty ? [t.ty] : [...new Set(out.flatMap(o => o.p.t))];
+  const rand = seeded(t.n);
+  const pick = list => { const top = list.slice(0, 24); while (out.length < 6 && top.length) push(top.splice(Math.floor(rand() * top.length), 1)[0]); };
+  pick(FILL_POOL.filter(p => sp(p).gen <= gen && p.t.some(x => types.includes(x))));
+  pick(FILL_POOL.filter(p => sp(p).gen <= gen));
+  return out;
+}
+function syncPairs(t) {
+  return [...(t.pmex || []).map(n => [n, ""]), ...(t.leg || [])].map(([n, outfit]) => ({ p: findByName(n), outfit })).filter(x => x.p);
+}
 function trainersUsing(p) {
   const base = norm(sp(p).n);
-  return trainers.filter(t => t.team.some(n => norm(n.replace(/-.*/, "")) === base) || (t.pmex || []).some(n => norm(n) === base));
+  return trainers.filter(t => finalTeam(t).some(m => m.s === p.s) || (t.pmex || []).some(n => norm(n) === base));
 }
 
 // computed superlatives across every default species
@@ -462,22 +522,24 @@ function renderTrainerFilters() {
   $("#tr-role").innerHTML = `<option value="">All roles</option>` + roles.map(r => `<option>${r}</option>`).join("");
 }
 function renderTrainers() {
-  const q = norm($("#tr-q").value), region = $("#tr-region").value, role = $("#tr-role").value, onlyPmex = $("#tr-pmex").checked;
-  const list = trainers.filter(t => (!region || t.r === region) && (!role || t.role === role) && (!onlyPmex || t.pmex) &&
-    (!q || norm(t.n).includes(q) || (t.ty && t.ty.includes(q)) || t.team.some(n => norm(n).includes(q)) || (t.pmex || []).some(n => norm(n).includes(q))));
-  $("#tr-count").textContent = `${list.length} trainer${list.length === 1 ? "" : "s"}${onlyPmex ? " with a Masters EX sync pair" : ""}`;
+  const q = norm($("#tr-q").value), region = $("#tr-region").value, role = $("#tr-role").value, onlyPmex = $("#tr-pmex").checked, onlyLeg = $("#tr-leg").checked;
+  const list = trainers.filter(t => (!region || t.r === region) && (!role || t.role === role) && (!onlyPmex || syncPairs(t).length) && (!onlyLeg || syncPairs(t).some(x => specialLabel(x.p))) &&
+    (!q || norm(t.n).includes(q) || (t.ty && t.ty.includes(q)) || t.team.some(n => norm(n).includes(q)) || syncPairs(t).some(x => norm(x.p.n).includes(q))));
+  $("#tr-count").textContent = `${list.length} trainer${list.length === 1 ? "" : "s"}${onlyLeg ? " with a legendary, Ultra Beast or Paradox sync pair" : onlyPmex ? " with a Masters EX sync pair" : ""}`;
   $("#tr-grid").innerHTML = list.map(t => {
     const idx = trainers.indexOf(t);
-    const team = t.team.map(findByName).filter(Boolean);
-    const sync = (t.pmex || []).map(findByName).filter(Boolean);
+    const team = fullTeam(t);
+    const power = team.reduce((sum, { p }) => sum + p.st.reduce((a, b, k) => a + statVal(b, k, "lv200"), 0), 0);
+    const sync = syncPairs(t);
     return `<article class="tcard" style="--tc:${trainerColor(t)}" id="t-${idx}">
       <div class="tcard-top"><div class="mono-av" aria-hidden="true">${initials(t.n)}</div>
         <div style="min-width:0"><h3>${esc(t.n)}</h3><div class="role">${esc(t.role)} · ${esc(t.r)}</div></div>
         <div style="margin-left:auto">${t.ty ? typeBadge(t.ty) : ""}</div></div>
-      <div class="team">${team.map(p => `<button type="button" data-add="${p.id}" title="Add ${esc(p.n)} to compare">${pixImg(p)}</button>`).join("")}</div>
-      ${sync.length ? `<div class="sync"><span class="ex">MASTERS EX</span>${sync.map(p => `${pixImg(p)}<span>Sync pair: <b>${esc(t.n)} &amp; ${esc(sp(p).n)}</b></span>`).join("")}</div>` : ""}
+      <div class="team">${team.map(({ p, filled }) => `<button type="button" class="${filled ? "filled" : ""}" data-add="${p.id}" title="${filled ? "Filler pick to complete the six. " : ""}Add ${esc(p.n)} to compare">${pixImg(p)}</button>`).join("")}</div>
+      ${team.some(o => o.filled) ? `<p class="fill-note">Dashed slots are filler picks to complete the six.</p>` : ""}
+      ${sync.length ? `<div class="sync-list"><span class="ex">MASTERS EX SYNC PAIRS</span>${sync.map(({ p, outfit }) => { const lab = specialLabel(p); return `<button type="button" class="sync${lab ? " legend" : ""}" data-add="${p.id}" title="Add ${esc(p.n)} to compare">${pixImg(p)}<span>${outfit ? `<i>${esc(outfit)}</i> ` : ""}<b>${esc(t.n)} &amp; ${esc(sp(p).n)}</b>${lab ? ` <span class="tag">${lab}</span>` : ""}</span></button>`; }).join("")}</div>` : ""}
       <p class="tfact">${esc(t.fact)}</p>
-      <div class="tcard-foot"><span class="debut">${esc(t.debut)}</span><button class="btn small" type="button" data-team="${idx}">Compare team</button></div>
+      <div class="tcard-foot"><span class="debut">${esc(t.debut)}<br>Lv. 200 maxed team power: <b>${power.toLocaleString("en-GB")}</b></span><button class="btn small" type="button" data-team="${idx}">Compare team</button></div>
     </article>`;
   }).join("") || `<p class="mini">No trainers match those filters.</p>`;
 }
@@ -502,11 +564,13 @@ document.addEventListener("click", e => {
   else if (t.dataset.add) { addPokemon(BY_ID.get(Number(t.dataset.add))); location.hash = "#compare"; window.scrollTo({ top: 0 }); }
   else if (t.dataset.team !== undefined) {
     const tr = trainers[Number(t.dataset.team)];
-    setSlots(tr.team.map(findByName).filter(Boolean).slice(-MAX));
+    statMode = "lv200";
+    const ft = fullTeam(tr), real = ft.filter(o => !o.filled).map(o => o.p);
+    setSlots((real.length >= MAX ? real.slice(-MAX) : real.concat(ft.filter(o => o.filled).map(o => o.p))).slice(0, MAX));
     location.hash = "#compare"; window.scrollTo({ top: 0 }); toast(`Comparing ${tr.n}'s team`);
   }
   else if (t.dataset.trainer) {
-    location.hash = "#trainers"; $("#tr-q").value = t.dataset.trainer; $("#tr-region").value = ""; $("#tr-role").value = ""; $("#tr-pmex").checked = false; renderTrainers();
+    location.hash = "#trainers"; $("#tr-q").value = t.dataset.trainer; $("#tr-region").value = ""; $("#tr-role").value = ""; $("#tr-pmex").checked = false; $("#tr-leg").checked = false; renderTrainers();
   }
   else if (t.id === "btn-random") randomFour();
   else if (t.id === "btn-clear") setSlots([]);
@@ -515,7 +579,7 @@ document.addEventListener("click", e => {
     navigator.clipboard?.writeText(url).then(() => toast("Link copied"), () => toast("Copy the address bar to share this comparison"));
   }
 });
-["#tr-q", "#tr-region", "#tr-role", "#tr-pmex"].forEach(s => $(s).addEventListener("input", renderTrainers));
+["#tr-q", "#tr-region", "#tr-role", "#tr-pmex", "#tr-leg"].forEach(s => $(s).addEventListener("input", renderTrainers));
 window.addEventListener("hashchange", route);
 
 // ---------- boot ----------
